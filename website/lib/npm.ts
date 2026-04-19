@@ -1,6 +1,8 @@
 // Lightweight npm registry client used by the dashboard route.
 // Intentionally dependency-free; runs on Vercel's Edge or Node runtime.
 
+import { unstable_cache } from 'next/cache';
+
 const SEARCH_URL = 'https://registry.npmjs.org/-/v1/search';
 const POINT_URL = 'https://api.npmjs.org/downloads/point';
 const RANGE_URL = 'https://api.npmjs.org/downloads/range';
@@ -156,24 +158,86 @@ export function parseRange(raw?: string): DateRange {
   }
 }
 
-export async function fetchPortfolio(username: string, range: DateRange): Promise<Portfolio> {
+type BaseRecord = {
+  name: string;
+  version: string;
+  published: string;
+  description: string;
+  lifetime: number;
+};
+
+// Lifetime + package list only. Cached per-username for 1 hour, shared
+// across every filter shortcut. Retries each failed lifetime once with
+// backoff so Cloudflare 1015 doesn't leave us with 0s.
+const fetchBaseUncached = async (username: string): Promise<BaseRecord[]> => {
   const pkgs = await listPackages(username);
   const today = new Date().toISOString().slice(0, 10);
-
-  const rows = await mapPool(pkgs, 4, async (p): Promise<Pkg> => {
-    // Two queries: lifetime (always Jan 1 2025 → today) + range daily series.
-    const [lifetime, daily] = await Promise.all([
-      fetchCount(p.name, `2025-01-01:${today}`),
-      fetchRangeDaily(p.name, range.start, range.end),
-    ]);
-    const rangeTotal = daily.reduce((s, n) => s + n, 0);
-    const spark = downsample(daily, 60);
+  const rows = await mapPool(pkgs, 3, async (p): Promise<BaseRecord> => {
+    let lifetime = await fetchCount(p.name, `2025-01-01:${today}`);
+    if (lifetime === 0) {
+      await new Promise((r) => setTimeout(r, 500));
+      lifetime = await fetchCount(p.name, `2025-01-01:${today}`);
+    }
     return {
       name: p.name,
       version: p.version,
       published: p.date.slice(0, 10),
       description: p.description,
       lifetime,
+    };
+  });
+  return rows;
+};
+
+const fetchBase = unstable_cache(
+  async (username: string) => fetchBaseUncached(username),
+  ['pkgfolio-base-v1'],
+  { revalidate: 3600, tags: ['pkgfolio'] }
+);
+
+type RangeRecord = { name: string; daily: number[] };
+
+// One range-daily fetch per package. Retries up to 3 times with growing
+// backoff if the API returned empty (Cloudflare 1015 surfaces as empty,
+// not as an HTTP error). Expected range lengths are computed so we can
+// distinguish "really zero" from "truncated by rate-limit".
+async function fetchRangeOnce(pkg: string, start: string, end: string) {
+  const expectedDays = Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86400000) + 1;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const daily = await fetchRangeDaily(pkg, start, end);
+    // Truncation detector: npm sometimes returns fewer days than requested when rate-limited.
+    const truncated = daily.length < Math.max(1, expectedDays * 0.9);
+    if (!truncated) return daily;
+    await new Promise((r) => setTimeout(r, 500 + attempt * 600 + Math.random() * 300));
+  }
+  return await fetchRangeDaily(pkg, start, end);
+}
+
+// Cached per (username, range) pair for 10 minutes. Clicking shortcut chips
+// repeatedly doesn't re-fire 17 queries each time; Next serves from cache.
+const fetchRangeData = unstable_cache(
+  async (username: string, start: string, end: string, names: string[]): Promise<RangeRecord[]> => {
+    return await mapPool(names, 2, async (name) => {
+      const daily = await fetchRangeOnce(name, start, end);
+      return { name, daily };
+    });
+  },
+  ['pkgfolio-range-v2'],
+  { revalidate: 600, tags: ['pkgfolio'] }
+);
+
+export async function fetchPortfolio(username: string, range: DateRange): Promise<Portfolio> {
+  const base = await fetchBase(username);
+  const names = base.map((b) => b.name);
+  const rangeData = await fetchRangeData(username, range.start, range.end, names);
+  const byName = new Map(rangeData.map((r) => [r.name, r.daily]));
+
+  const ranged: Pkg[] = base.map((b) => {
+    const daily = byName.get(b.name) || [];
+    const rangeTotal = daily.reduce((s, n) => s + n, 0);
+    const spark = downsample(daily, 60);
+    return {
+      ...b,
       rangeTotal,
       spark,
       rangeDays: daily.length,
@@ -182,9 +246,9 @@ export async function fetchPortfolio(username: string, range: DateRange): Promis
 
   // Sort by range total first (matches what the filter is asking about),
   // tiebreak by lifetime for stability.
-  rows.sort((a, b) => b.rangeTotal - a.rangeTotal || b.lifetime - a.lifetime);
+  ranged.sort((a, b) => b.rangeTotal - a.rangeTotal || b.lifetime - a.lifetime);
 
-  const totals = rows.reduce(
+  const totals = ranged.reduce(
     (t, r) => ({
       lifetime: t.lifetime + r.lifetime,
       rangeTotal: t.rangeTotal + r.rangeTotal,
@@ -196,7 +260,7 @@ export async function fetchPortfolio(username: string, range: DateRange): Promis
     username,
     fetchedAt: new Date().toISOString(),
     range,
-    packages: rows,
+    packages: ranged,
     totals,
   };
 }
