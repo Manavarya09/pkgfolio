@@ -1,6 +1,7 @@
-import { fetchPortfolio, type Pkg } from '@/lib/npm';
+import { fetchPortfolio, parseRange, type Pkg } from '@/lib/npm';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import FilterBar from './FilterBar';
 
 export const revalidate = 600;
 
@@ -18,7 +19,7 @@ function sparkPath(values: number[], w: number, h: number) {
   return `M${pts.join(' L')}`;
 }
 
-function Card({ p, rank, lead }: { p: Pkg; rank: number; lead: boolean }) {
+function Card({ p, rank, lead, rangeLabel }: { p: Pkg; rank: number; lead: boolean; rangeLabel: string }) {
   const description = p.description || '—';
   const sparkD = sparkPath(p.spark, 300, 52);
   return (
@@ -29,8 +30,8 @@ function Card({ p, rank, lead }: { p: Pkg; rank: number; lead: boolean }) {
       </div>
 
       <div>
-        <div className="rank">№ {String(rank).padStart(2, '0')} · lifetime</div>
-        <div className="big">{fmt(p.lifetime)}</div>
+        <div className="rank">№ {String(rank).padStart(2, '0')} · {rangeLabel.toLowerCase()}</div>
+        <div className="big">{fmt(p.rangeTotal)}</div>
       </div>
 
       <p className="lede" style={{ margin: 0 }}>
@@ -44,9 +45,9 @@ function Card({ p, rank, lead }: { p: Pkg; rank: number; lead: boolean }) {
       )}
 
       <div className="stats">
-        <div><div className="k">30d</div><div className="v">{fmt(p.lastMonth)}</div></div>
-        <div><div className="k">7d</div><div className="v">{fmt(p.lastWeek)}</div></div>
-        <div><div className="k">1d</div><div className="v">{fmt(p.lastDay)}</div></div>
+        <div><div className="k">lifetime</div><div className="v">{fmt(p.lifetime)}</div></div>
+        <div><div className="k">days</div><div className="v">{p.rangeDays}</div></div>
+        <div><div className="k">per day</div><div className="v">{p.rangeDays ? fmt(Math.round(p.rangeTotal / p.rangeDays)) : '—'}</div></div>
       </div>
     </article>
   );
@@ -59,8 +60,15 @@ export async function generateMetadata({ params }: { params: { username: string 
   };
 }
 
-export default async function UserPage({ params }: { params: { username: string } }) {
-  const portfolio = await fetchPortfolio(params.username);
+export default async function UserPage({
+  params,
+  searchParams,
+}: {
+  params: { username: string };
+  searchParams: { range?: string };
+}) {
+  const range = parseRange(searchParams.range);
+  const portfolio = await fetchPortfolio(params.username, range);
   if (!portfolio.packages || portfolio.packages.length === 0) notFound();
 
   return (
@@ -83,34 +91,44 @@ export default async function UserPage({ params }: { params: { username: string 
         </div>
       </header>
 
+      <FilterBar activeKey={range.key} start={range.start} end={range.end} />
+
       <div className="totals">
         <div>
           <div className="k">lifetime</div>
           <div className="v">{fmt(portfolio.totals.lifetime)}</div>
         </div>
         <div>
-          <div className="k">last 30 days</div>
-          <div className="v">{fmt(portfolio.totals.lastMonth)}</div>
+          <div className="k">{range.label.toLowerCase()}</div>
+          <div className="v">{fmt(portfolio.totals.rangeTotal)}</div>
         </div>
         <div>
-          <div className="k">last 7 days</div>
-          <div className="v">{fmt(portfolio.totals.lastWeek)}</div>
+          <div className="k">packages</div>
+          <div className="v">{portfolio.packages.length}</div>
         </div>
         <div>
-          <div className="k">last day</div>
-          <div className="v">{fmt(portfolio.totals.lastDay)}</div>
+          <div className="k">per day (avg)</div>
+          <div className="v">
+            {(() => {
+              const days = Math.max(
+                1,
+                Math.round((new Date(range.end).getTime() - new Date(range.start).getTime()) / 86400000) + 1
+              );
+              return fmt(Math.round(portfolio.totals.rangeTotal / days));
+            })()}
+          </div>
         </div>
       </div>
 
       <section className="masonry">
         {portfolio.packages.map((p, i) => (
-          <Card key={p.name} p={p} rank={i + 1} lead={i === 0} />
+          <Card key={p.name} p={p} rank={i + 1} lead={i === 0} rangeLabel={range.label} />
         ))}
       </section>
 
       <footer className="footer">
         <span>
-          data: registry.npmjs.org · refreshed every 10 min
+          data: registry.npmjs.org · cached 10 min · range: {range.start} → {range.end}
         </span>
         <span>
           <Link href="/" style={{ color: 'inherit' }}>← another portfolio</Link>

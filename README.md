@@ -53,20 +53,22 @@ Requires Node 18+.
 
 ## Web
 
-[**pkgfolio.dev**](https://pkgfolio.dev) is a Pinterest-style portfolio view of the same data. Paste any npm username, get a masonry grid of every package they ship — sorted by lifetime downloads, with 30-day sparklines, rendered in a typography-forward, high-class layout (serif display, monochrome palette, no icons, no emojis).
+[**pkgfolio.vercel.app**](https://pkgfolio.vercel.app) is a Pinterest-style portfolio view of the same data. Paste any npm username, get a masonry grid of every package they ship — sorted by lifetime downloads, with sparklines, rendered in a typography-forward, high-class layout (serif display, monochrome palette, no icons, no emojis).
+
+**Time-range filters:** every portfolio page has shortcut chips — `7D · 30D · 90D · 6M · 1Y · ALL` — plus a `CUSTOM` option that reveals two date pickers. The URL reflects the filter (`?range=90d`, `?range=2026-01-01:2026-04-20`), so any view is shareable as a link. Cards re-sort by downloads in the selected range; the "lifetime" card and total are always shown alongside.
 
 The web app is in [`website/`](website/). It's a Next.js App Router site deployed on Vercel.
 
 ## How it works
 
 1. Queries [`registry.npmjs.org/-/v1/search`](https://registry.npmjs.org/-/v1/search) for every package where the target username is a maintainer (paginated to 1,250 packages).
-2. For each package, fetches two numbers in parallel:
-   - **Lifetime downloads** — `api.npmjs.org/downloads/point/2025-01-01:<today>/<pkg>`.
-   - **30-day sparkline** — `api.npmjs.org/downloads/range/<start>:<end>/<pkg>`.
-3. `lastMonth` / `lastWeek` / `lastDay` are summed from the sparkline array — no extra requests.
-4. Four packages concurrent, retries with backoff on `429` / `1015` (Cloudflare rate-limit), sorted by lifetime, rendered.
+2. For each package, fetches two things in parallel:
+   - **Lifetime downloads** — one point query: `api.npmjs.org/downloads/point/2025-01-01:<today>/<pkg>`.
+   - **Daily series for the selected range** — one range query: `api.npmjs.org/downloads/range/<start>:<end>/<pkg>`. For wide ranges (>500 days) the window is chunked and concatenated.
+3. The range total, "per day" average, and sparkline are all derived from that one daily array — no extra requests per filter shortcut.
+4. Four packages concurrent, retries with backoff on `429` / `1015` (Cloudflare rate-limit), sorted by range total, rendered.
 
-A typical 17-package portfolio finishes in **under 5 seconds** with no API key and no signup.
+A typical 17-package portfolio finishes in **under 5 seconds** with no API key and no signup. The dashboard cache is 10 min per `(username, range)` pair.
 
 ## Repo layout
 

@@ -5,23 +5,32 @@ const SEARCH_URL = 'https://registry.npmjs.org/-/v1/search';
 const POINT_URL = 'https://api.npmjs.org/downloads/point';
 const RANGE_URL = 'https://api.npmjs.org/downloads/range';
 
+export type RangeKey = '7d' | '30d' | '90d' | '6mo' | '1y' | 'all' | 'custom';
+
+export type DateRange = {
+  key: RangeKey;
+  start: string; // YYYY-MM-DD
+  end: string;   // YYYY-MM-DD
+  label: string; // human-readable
+};
+
 export type Pkg = {
   name: string;
   version: string;
   published: string;
   description: string;
-  lifetime: number;
-  lastMonth: number;
-  lastWeek: number;
-  lastDay: number;
-  spark: number[];
+  lifetime: number; // Jan 1 2025 → today, always on, independent of filter
+  rangeTotal: number; // downloads inside the selected range
+  spark: number[]; // daily counts across the selected range, trimmed to <=60 samples
+  rangeDays: number; // number of days in the range
 };
 
 export type Portfolio = {
   username: string;
   fetchedAt: string;
+  range: DateRange;
   packages: Pkg[];
-  totals: { lifetime: number; lastMonth: number; lastWeek: number; lastDay: number };
+  totals: { lifetime: number; rangeTotal: number };
 };
 
 async function getJson<T>(url: string, retries = 3): Promise<T | null> {
@@ -69,14 +78,30 @@ async function fetchCount(pkg: string, period: string) {
   return j?.downloads || 0;
 }
 
-async function fetchSpark(pkg: string, days = 30) {
-  const end = new Date();
-  const start = new Date(end.getTime() - (days - 1) * 86400000);
-  const fmt = (d: Date) => d.toISOString().slice(0, 10);
-  const j = await getJson<{ downloads: Array<{ downloads: number }> }>(
-    `${RANGE_URL}/${fmt(start)}:${fmt(end)}/${pkg}`
-  );
-  return (j?.downloads || []).map((d) => d.downloads);
+async function fetchRangeDaily(pkg: string, start: string, end: string) {
+  // npm's range endpoint caps at ~540 days per request; chunk if wider.
+  const chunks: Array<{ start: string; end: string }> = [];
+  const startD = new Date(start);
+  const endD = new Date(end);
+  const msPerDay = 86400000;
+  const MAX_DAYS = 500;
+  let cursor = new Date(startD);
+  while (cursor <= endD) {
+    const windowEnd = new Date(Math.min(endD.getTime(), cursor.getTime() + (MAX_DAYS - 1) * msPerDay));
+    chunks.push({
+      start: cursor.toISOString().slice(0, 10),
+      end: windowEnd.toISOString().slice(0, 10),
+    });
+    cursor = new Date(windowEnd.getTime() + msPerDay);
+  }
+  const out: number[] = [];
+  for (const c of chunks) {
+    const j = await getJson<{ downloads: Array<{ downloads: number }> }>(
+      `${RANGE_URL}/${c.start}:${c.end}/${pkg}`
+    );
+    for (const d of j?.downloads || []) out.push(d.downloads);
+  }
+  return out;
 }
 
 async function mapPool<T, R>(items: T[], concurrency: number, fn: (item: T) => Promise<R>): Promise<R[]> {
@@ -93,53 +118,84 @@ async function mapPool<T, R>(items: T[], concurrency: number, fn: (item: T) => P
   return out;
 }
 
-export async function fetchPortfolio(username: string): Promise<Portfolio> {
+// Down-sample a long daily series into ≤maxPoints buckets by summing. Keeps
+// the sparkline readable even for "all" (~500 days).
+function downsample(values: number[], maxPoints: number) {
+  if (values.length <= maxPoints) return values;
+  const bucket = Math.ceil(values.length / maxPoints);
+  const out: number[] = [];
+  for (let i = 0; i < values.length; i += bucket) {
+    const slice = values.slice(i, i + bucket);
+    out.push(slice.reduce((s, n) => s + n, 0));
+  }
+  return out;
+}
+
+// Parse a `range` searchParam into a DateRange. Accepted values:
+//   - shortcut keys: 7d, 30d, 90d, 6mo, 1y, all
+//   - custom ISO range: 2026-01-01:2026-04-20
+// Falls back to 30d for unknown input.
+export function parseRange(raw?: string): DateRange {
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const daysAgo = (n: number) => new Date(today.getTime() - n * 86400000).toISOString().slice(0, 10);
+
+  if (raw && /^\d{4}-\d{2}-\d{2}:\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const [s, e] = raw.split(':');
+    return { key: 'custom', start: s, end: e, label: `${s} → ${e}` };
+  }
+
+  switch (raw) {
+    case '7d':  return { key: '7d',  start: daysAgo(6),   end: todayStr, label: 'Last 7 days' };
+    case '90d': return { key: '90d', start: daysAgo(89),  end: todayStr, label: 'Last 90 days' };
+    case '6mo': return { key: '6mo', start: daysAgo(182), end: todayStr, label: 'Last 6 months' };
+    case '1y':  return { key: '1y',  start: daysAgo(364), end: todayStr, label: 'Last 12 months' };
+    case 'all': return { key: 'all', start: '2025-01-01', end: todayStr, label: 'All time' };
+    case '30d':
+    default:    return { key: '30d', start: daysAgo(29),  end: todayStr, label: 'Last 30 days' };
+  }
+}
+
+export async function fetchPortfolio(username: string, range: DateRange): Promise<Portfolio> {
   const pkgs = await listPackages(username);
   const today = new Date().toISOString().slice(0, 10);
 
-  // Per-package, fetch its 5 numbers in parallel; across packages, throttle
-  // to 4 concurrent. Keeps us under Cloudflare's 1015 limit on the npm API
-  // while finishing a typical portfolio in <5s.
   const rows = await mapPool(pkgs, 4, async (p): Promise<Pkg> => {
-    // Two queries per package: lifetime (1 point query) and sparkline (1
-    // 30-day range). lastMonth/lastWeek/lastDay are computed from the spark
-    // array — cuts us from 5 queries per package to 2, finishes in ~5s for
-    // 17 packages, stays well under Cloudflare's 1015 limit.
-    const [lifetime, spark] = await Promise.all([
+    // Two queries: lifetime (always Jan 1 2025 → today) + range daily series.
+    const [lifetime, daily] = await Promise.all([
       fetchCount(p.name, `2025-01-01:${today}`),
-      fetchSpark(p.name, 30),
+      fetchRangeDaily(p.name, range.start, range.end),
     ]);
-    const sum = (arr: number[]) => arr.reduce((s, n) => s + n, 0);
-    const lastMonth = sum(spark);
-    const lastWeek = sum(spark.slice(-7));
-    const lastDay = spark[spark.length - 1] || 0;
+    const rangeTotal = daily.reduce((s, n) => s + n, 0);
+    const spark = downsample(daily, 60);
     return {
       name: p.name,
       version: p.version,
       published: p.date.slice(0, 10),
       description: p.description,
       lifetime,
-      lastMonth,
-      lastWeek,
-      lastDay,
+      rangeTotal,
       spark,
+      rangeDays: daily.length,
     };
   });
 
-  rows.sort((a, b) => b.lifetime - a.lifetime);
+  // Sort by range total first (matches what the filter is asking about),
+  // tiebreak by lifetime for stability.
+  rows.sort((a, b) => b.rangeTotal - a.rangeTotal || b.lifetime - a.lifetime);
+
   const totals = rows.reduce(
     (t, r) => ({
       lifetime: t.lifetime + r.lifetime,
-      lastMonth: t.lastMonth + r.lastMonth,
-      lastWeek: t.lastWeek + r.lastWeek,
-      lastDay: t.lastDay + r.lastDay,
+      rangeTotal: t.rangeTotal + r.rangeTotal,
     }),
-    { lifetime: 0, lastMonth: 0, lastWeek: 0, lastDay: 0 }
+    { lifetime: 0, rangeTotal: 0 }
   );
 
   return {
     username,
     fetchedAt: new Date().toISOString(),
+    range,
     packages: rows,
     totals,
   };
