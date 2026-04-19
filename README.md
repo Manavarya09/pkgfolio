@@ -1,9 +1,24 @@
-# pkgfolio
+<p align="center">
+  <strong>pkgfolio</strong>
+</p>
 
-Your npm package portfolio. Lifetime and recent downloads across every package you maintain, in one command or one page.
+<p align="center">
+  <em>Your npm package portfolio — in one command, or one page.</em>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/pkgfolio"><img src="https://img.shields.io/npm/v/pkgfolio?color=0A0908&labelColor=F3F1EA&label=npm" alt="npm version"></a>
+  <a href="https://github.com/Manavarya09/pkgfolio/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Manavarya09/pkgfolio?color=0A0908&labelColor=F3F1EA" alt="license"></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/pkgfolio?color=0A0908&labelColor=F3F1EA" alt="node version"></a>
+  <a href="https://www.npmjs.com/package/pkgfolio"><img src="https://img.shields.io/npm/dm/pkgfolio?color=0A0908&labelColor=F3F1EA&label=downloads" alt="downloads"></a>
+</p>
+
+---
+
+npm shows each package in isolation. Your actual distribution lives across *all* of them. **pkgfolio** adds them up.
 
 ```bash
-npx pkgfolio manavarya0909
+npx pkgfolio <your-npm-username>
 ```
 
 ```
@@ -11,41 +26,66 @@ npx pkgfolio manavarya0909
 
   Package                         Ever      30d       7d    1d   Last 30d
   ────────────────────────────────────────────────────────────────────────
-  designlang                   1,987    1,987    1,987   507   ▁▁▁▁▁▁▁█▅▃
-  ai-design-skills             1,254    1,254       19     1   ▁▁█▁▁▁▁▁▁▁
-  moldui                       1,213    1,213    1,213    47   ▁▁▁▁▁▁▁▁▁█
-  @manavarya0909/ui-forge-cli  1,022    1,022       16     2   ██▂▃▁▁▁▁▁▁
+  designlang                    1,987     1,987    1,987    0   ▁▁▁▁▁▁▁█▅▃▆▁
+  ai-design-skills              1,254     1,254       19    0   ▁▁█▁▁▁▁▁▁▁▁▁
+  moldui                        1,213     1,213    1,213    0   ▁▁▁▁▁▁▁▁▁█▅▁
+  @manavarya0909/ui-forge-cli   1,022       894       14    0   ██▂▃▁▁▁▁▁▁▁▁
+  @masyv/relay                    829       829        6    0   ▁▁▁▁▁▁▁▁▁█▁▁
   …
   ────────────────────────────────────────────────────────────────────────
-  TOTAL                       10,641   10,641    3,659   571
+  TOTAL                         9,437     9,148    3,308    0
 
-  17 packages · 10,641 lifetime downloads
+  17 packages · 9,437 lifetime downloads
 ```
 
-## Why
-
-npm shows each package in isolation. Your actual distribution lives across *all* of them. `pkgfolio` adds them up.
-
-## Web
-
-[pkgfolio.dev](https://pkgfolio.dev) is a Pinterest-style portfolio view of the same data. Paste your username, get a masonry grid of every package you ship, sorted by lifetime downloads, with 30-day sparklines.
-
-## Install / run
+## Install
 
 ```bash
-# one-off
-npx pkgfolio <your-npm-username>
+# one-off, no install
+npx pkgfolio <username>
 
-# global
+# or install globally
 npm install -g pkgfolio
 pkgfolio sindresorhus
 ```
 
+Requires Node 18+.
+
+## Web
+
+[**pkgfolio.dev**](https://pkgfolio.dev) is a Pinterest-style portfolio view of the same data. Paste any npm username, get a masonry grid of every package they ship — sorted by lifetime downloads, with 30-day sparklines, rendered in a typography-forward, high-class layout (serif display, monochrome palette, no icons, no emojis).
+
+The web app is in [`website/`](website/). It's a Next.js App Router site deployed on Vercel.
+
+## How it works
+
+1. Queries [`registry.npmjs.org/-/v1/search`](https://registry.npmjs.org/-/v1/search) for every package where the target username is a maintainer (paginated to 1,250 packages).
+2. For each package, fetches two numbers in parallel:
+   - **Lifetime downloads** — `api.npmjs.org/downloads/point/2025-01-01:<today>/<pkg>`.
+   - **30-day sparkline** — `api.npmjs.org/downloads/range/<start>:<end>/<pkg>`.
+3. `lastMonth` / `lastWeek` / `lastDay` are summed from the sparkline array — no extra requests.
+4. Four packages concurrent, retries with backoff on `429` / `1015` (Cloudflare rate-limit), sorted by lifetime, rendered.
+
+A typical 17-package portfolio finishes in **under 5 seconds** with no API key and no signup.
+
 ## Repo layout
 
 ```
-bin/cli.js     — the CLI
-website/       — the Next.js app (pkgfolio.dev)
+bin/
+  cli.js           ← the CLI
+
+website/
+  app/
+    page.tsx         ← landing (URL form)
+    u/[username]/
+      page.tsx       ← the portfolio dashboard
+      not-found.tsx
+    layout.tsx
+    globals.css      ← monochrome + serif design system
+  lib/
+    npm.ts           ← shared npm registry client
+  next.config.mjs
+  tsconfig.json
 ```
 
 ## Develop
@@ -53,13 +93,32 @@ website/       — the Next.js app (pkgfolio.dev)
 ```bash
 git clone https://github.com/Manavarya09/pkgfolio
 cd pkgfolio
+
+# CLI
 npm install
-node bin/cli.js manavarya0909
+node bin/cli.js <username>
 
 # Website
-cd website && npm install && npm run dev
+cd website
+npm install
+npm run dev   # opens on :3042
 ```
+
+## Roadmap
+
+- [ ] Pin your portfolio with a shareable card (`/u/<username>/card.png`).
+- [ ] Compare two maintainers side-by-side (`/compare/a-vs-b`).
+- [ ] Weekly email digest (opt-in, one line: "+12% on your portfolio this week").
+- [ ] Organization view (`/org/<org-name>`).
+- [ ] Historical chart beyond 30 days.
+- [ ] JSON API — `GET /api/u/<username>` — same payload, programmatic.
+
+## Credits
+
+Built by [@Manavarya09](https://github.com/Manavarya09). Data from the public [npm Downloads API](https://github.com/npm/registry/blob/main/docs/download-counts.md).
+
+Inspired by every maintainer who's ever opened five npm pages in five tabs just to add up their own numbers.
 
 ## License
 
-MIT
+[MIT](LICENSE)
