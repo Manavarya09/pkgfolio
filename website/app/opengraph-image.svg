@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="pkgfolio — your npm package portfolio">
+  <style>
+    .wordmark { font-family: 'Fraunces','Times New Roman',serif; font-weight: 300; font-size: 220px; letter-spacing: -0.04em; fill: #0A0908; }
+    .tag { font-family: 'Fraunces', serif; font-weight: 300; font-style: italic; font-size: 40px; fill: #3b3a36; letter-spacing: -0.01em; }
+    .meta { font-family: ui-monospace, Menlo, 'JetBrains Mono', monospace; font-size: 20px; fill: #7a7872; letter-spacing: 0.14em; }
+    .rule { stroke: #d9d5c9; stroke-width: 1.5; }
+  </style>
+  <rect width="1200" height="630" fill="#FFFFFF"/>
+  <text class="meta" x="72" y="64">PKGFOLIO · NPM DOWNLOADS · PORTFOLIO</text>
+  <line class="rule" x1="72" y1="96" x2="1128" y2="96"/>
+  <text class="wordmark" x="60" y="390">pkgfolio</text>
+  <text class="tag" x="68" y="452">A portfolio for your npm work.</text>
+  <line class="rule" x1="72" y1="540" x2="1128" y2="540"/>
+  <text class="meta" x="72" y="576">ONE COMMAND · ONE PAGE · EVERY PACKAGE YOU MAINTAIN</text>
+  <text class="meta" x="1128" y="576" text-anchor="end">PKGFOLIO.VERCEL.APP</text>
+</svg>

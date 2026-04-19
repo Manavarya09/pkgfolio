@@ -1,16 +1,25 @@
 <p align="center">
-  <strong>pkgfolio</strong>
+  <a href="https://pkgfolio.vercel.app">
+    <img src="banner.svg" alt="pkgfolio — your npm package portfolio" width="100%">
+  </a>
 </p>
 
 <p align="center">
-  <em>Your npm package portfolio — in one command, or one page.</em>
+  <a href="https://www.npmjs.com/package/pkgfolio"><img src="https://img.shields.io/npm/v/pkgfolio?color=0A0908&labelColor=FFFFFF&label=npm" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/pkgfolio"><img src="https://img.shields.io/npm/dm/pkgfolio?color=0A0908&labelColor=FFFFFF&label=downloads" alt="downloads"></a>
+  <a href="https://github.com/Manavarya09/pkgfolio/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Manavarya09/pkgfolio?color=0A0908&labelColor=FFFFFF" alt="license"></a>
+  <a href="https://github.com/Manavarya09/pkgfolio/stargazers"><img src="https://img.shields.io/github/stars/Manavarya09/pkgfolio?color=0A0908&labelColor=FFFFFF" alt="github stars"></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/pkgfolio?color=0A0908&labelColor=FFFFFF" alt="node version"></a>
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/pkgfolio"><img src="https://img.shields.io/npm/v/pkgfolio?color=0A0908&labelColor=F3F1EA&label=npm" alt="npm version"></a>
-  <a href="https://github.com/Manavarya09/pkgfolio/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Manavarya09/pkgfolio?color=0A0908&labelColor=F3F1EA" alt="license"></a>
-  <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/pkgfolio?color=0A0908&labelColor=F3F1EA" alt="node version"></a>
-  <a href="https://www.npmjs.com/package/pkgfolio"><img src="https://img.shields.io/npm/dm/pkgfolio?color=0A0908&labelColor=F3F1EA&label=downloads" alt="downloads"></a>
+  <a href="https://pkgfolio.vercel.app"><strong>pkgfolio.vercel.app</strong></a>
+  ·
+  <a href="#install"><strong>Install</strong></a>
+  ·
+  <a href="#how-it-works"><strong>How it works</strong></a>
+  ·
+  <a href="CONTRIBUTING.md"><strong>Contribute</strong></a>
 </p>
 
 ---

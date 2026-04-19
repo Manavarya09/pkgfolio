@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="pkgfolio">
+  <rect width="512" height="512" rx="0" fill="#FFFFFF"/>
+  <!-- Outer hairline frame -->
+  <rect x="32" y="32" width="448" height="448" fill="none" stroke="#0A0908" stroke-width="2"/>
+  <!-- The mark: a serif 'p' as the whole personality -->
+  <text x="50%" y="66%"
+    text-anchor="middle"
+    font-family="'Fraunces', 'Times New Roman', serif"
+    font-size="420"
+    font-weight="300"
+    fill="#0A0908"
+    style="letter-spacing:-0.05em">p</text>
+</svg>
