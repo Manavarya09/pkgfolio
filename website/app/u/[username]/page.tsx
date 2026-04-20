@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import FilterBar from './FilterBar';
 import TerminalButton from './TerminalButton';
-import EmbedPanel from './EmbedPanel';
+import CopyEmbedButton from './CopyEmbedButton';
 
 export const revalidate = 600;
 
@@ -51,6 +51,8 @@ function Card({ p, rank, lead, rangeLabel }: { p: Pkg; rank: number; lead: boole
         <div><div className="k">days</div><div className="v">{p.rangeDays}</div></div>
         <div><div className="k">per day</div><div className="v">{p.rangeDays ? fmt(Math.round(p.rangeTotal / p.rangeDays)) : '—'}</div></div>
       </div>
+
+      <CopyEmbedButton pkgName={p.name} />
     </article>
   );
 }
@@ -128,11 +130,6 @@ export default async function UserPage({
           <Card key={p.name} p={p} rank={i + 1} lead={i === 0} rangeLabel={range.label} />
         ))}
       </section>
-
-      <EmbedPanel
-        username={params.username}
-        packages={portfolio.packages.map((p) => ({ name: p.name, rangeTotal: p.rangeTotal, lifetime: p.lifetime }))}
-      />
 
       <footer className="footer">
         <span>
