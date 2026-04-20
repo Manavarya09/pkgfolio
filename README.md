@@ -60,6 +60,34 @@ pkgfolio sindresorhus
 
 Requires Node 18+.
 
+## Embed in your GitHub README
+
+Live SVG cards you can drop into any README, profile, or site.
+
+<p>
+  <a href="https://pkgfolio.vercel.app/u/manavarya0909">
+    <img src="https://pkgfolio.vercel.app/embed/u/manavarya0909" alt="pkgfolio — @manavarya0909" width="560">
+  </a>
+</p>
+
+**Your whole npm portfolio:**
+
+```md
+[![npm portfolio](https://pkgfolio.vercel.app/embed/u/YOUR-USERNAME)](https://pkgfolio.vercel.app/u/YOUR-USERNAME)
+```
+
+**A single package:**
+
+```md
+[![npm downloads](https://pkgfolio.vercel.app/embed/pkg/YOUR-PACKAGE)](https://pkgfolio.vercel.app/u/YOUR-USERNAME)
+```
+
+Scoped packages work too — pass the slash literally: `/embed/pkg/@scope/name`.
+
+Each card is a live SVG — cached 30 minutes, refreshed in the background. Add `?range=7d|30d|90d|6mo|1y|all` to the portfolio embed to lock a time range.
+
+On the hosted dashboard there's an **Embed in your GitHub README** panel at the bottom of every portfolio page that shows a live preview and copies the markdown / HTML snippet for you.
+
 ## Web
 
 [**pkgfolio.vercel.app**](https://pkgfolio.vercel.app) is a Pinterest-style portfolio view of the same data. Paste any npm username, get a masonry grid of every package they ship — sorted by lifetime downloads, with sparklines, rendered in a typography-forward, high-class layout (serif display, monochrome palette, no icons, no emojis).
