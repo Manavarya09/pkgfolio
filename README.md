@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://pkgfolio.vercel.app">
-    <img src="banner.svg" alt="pkgfolio — your npm package portfolio" width="100%">
+    <img src="brand.svg" alt="pkgfolio — your npm package portfolio" width="100%">
   </a>
 </p>
 

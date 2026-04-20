@@ -39,8 +39,8 @@ website/
     layout.tsx
     globals.css                 — design system (monochrome + Fraunces)
   lib/npm.ts                    — shared npm registry client + cache
-  public/{banner,logo}.svg      — brand assets
-banner.svg / logo.svg           — same assets at repo root for GitHub README
+  public/{brand,logo}.svg      — brand assets
+brand.svg / logo.svg           — same assets at repo root for GitHub README
 ```
 
 ## Code style
