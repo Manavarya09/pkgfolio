@@ -121,6 +121,83 @@ a:hover { color: var(--accent); }
 }
 .form button:hover { background: var(--accent); }
 
+/* ── "OR IN YOUR TERMINAL" divider + terminal box ───── */
+
+.or-terminal {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 32px 0 14px 0;
+  max-width: 520px;
+}
+.or-line {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+.or-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.term {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 520px;
+  padding: 16px 18px;
+  border: 1px solid var(--ink);
+  background: #0A0908;
+  color: #F3F1EA;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.term:hover { background: #18161f; }
+.term.copied { border-color: var(--accent); }
+.term .prompt {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+.term .cmd {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: #F3F1EA;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.term .copy-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--ink-muted);
+  padding-left: 12px;
+  border-left: 1px solid #3b3a36;
+  min-width: 64px;
+  text-align: right;
+}
+.term.copied .copy-label { color: var(--accent); }
+
+/* Dashboard variant: monochrome on cream to match the page */
+.term.on-cream {
+  background: var(--bg-card);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  margin-bottom: 24px;
+}
+.term.on-cream:hover { background: #fff; border-color: var(--ink); }
+.term.on-cream .cmd { color: var(--ink); }
+.term.on-cream .prompt { color: var(--ink-muted); }
+.term.on-cream .copy-label { border-left-color: var(--rule); }
+
 .shortcuts {
   margin-top: 24px;
   font-family: var(--font-mono);

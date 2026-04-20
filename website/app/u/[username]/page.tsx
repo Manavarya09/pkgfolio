@@ -2,6 +2,7 @@ import { fetchPortfolio, parseRange, type Pkg } from '@/lib/npm';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import FilterBar from './FilterBar';
+import TerminalButton from './TerminalButton';
 
 export const revalidate = 600;
 
@@ -76,7 +77,6 @@ export default async function UserPage({
       <nav className="nav">
         <Link href="/" className="mark" style={{ textDecoration: 'none' }}>pkgfolio</Link>
         <span className="meta">
-          <span style={{ marginRight: 16 }}>npx pkgfolio {params.username}</span>
           fetched {new Date(portfolio.fetchedAt).toUTCString().slice(5, 16)}
         </span>
       </nav>
@@ -92,6 +92,8 @@ export default async function UserPage({
       </header>
 
       <FilterBar activeKey={range.key} start={range.start} end={range.end} />
+
+      <TerminalButton username={params.username} />
 
       <div className="totals">
         <div>

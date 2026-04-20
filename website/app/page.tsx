@@ -6,11 +6,22 @@ import { useState } from 'react';
 export default function Landing() {
   const router = useRouter();
   const [u, setU] = useState('');
+  const [copied, setCopied] = useState(false);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     const clean = u.trim().replace(/^@/, '');
     if (clean) router.push(`/u/${clean}`);
+  }
+
+  const npxCmd = u.trim() ? `npx pkgfolio ${u.trim().replace(/^@/, '')}` : 'npx pkgfolio <username>';
+
+  async function copyCmd() {
+    try {
+      await navigator.clipboard.writeText(npxCmd);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch { /* ignore */ }
   }
 
   return (
@@ -39,6 +50,18 @@ export default function Landing() {
           />
           <button type="submit">Open portfolio</button>
         </form>
+
+        <div className="or-terminal">
+          <span className="or-line" aria-hidden />
+          <span className="or-label">OR IN YOUR TERMINAL</span>
+          <span className="or-line" aria-hidden />
+        </div>
+
+        <button type="button" className={`term${copied ? ' copied' : ''}`} onClick={copyCmd} aria-label="Copy npx command">
+          <span className="prompt">$</span>
+          <span className="cmd">{npxCmd}</span>
+          <span className="copy-label">{copied ? 'COPIED' : 'COPY'}</span>
+        </button>
 
         <div className="shortcuts">
           Try:
