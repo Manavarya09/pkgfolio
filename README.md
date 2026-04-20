@@ -24,6 +24,16 @@
 
 ---
 
+<p align="center">
+  <a href="https://pkgfolio.vercel.app/u/manavarya0909">
+    <img src="website/public/screenshot-portfolio.png" alt="pkgfolio dashboard — 18 packages, 11,062 lifetime downloads across one page" width="100%">
+  </a>
+</p>
+
+<p align="center"><sub><em>Live portfolio view · <a href="https://pkgfolio.vercel.app/u/manavarya0909">pkgfolio.vercel.app/u/manavarya0909</a></em></sub></p>
+
+---
+
 npm shows each package in isolation. Your actual distribution lives across *all* of them. **pkgfolio** adds them up.
 
 ```bash
