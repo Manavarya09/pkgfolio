@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 620" width="1600" height="620" role="img" aria-label="pkgfolio — a portfolio for your npm work">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 720" width="1600" height="720" role="img" aria-label="pkgfolio — a portfolio for your npm work">
   <defs>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&amp;family=JetBrains+Mono:wght@400&amp;display=swap');
-      .wordmark { font-family: 'Fraunces', 'Times New Roman', serif; font-weight: 300; font-size: 220px; letter-spacing: -0.04em; fill: #0A0908; }
+      .wordmark { font-family: 'Fraunces', 'Times New Roman', serif; font-weight: 300; font-size: 200px; letter-spacing: -0.04em; fill: #0A0908; }
       .tag { font-family: 'Fraunces', 'Times New Roman', serif; font-weight: 300; font-style: italic; font-size: 40px; fill: #3b3a36; letter-spacing: -0.005em; }
       .meta { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 19px; fill: #7a7872; letter-spacing: 0.16em; }
       .rule { stroke: #d9d5c9; stroke-width: 1.5; }
@@ -10,27 +10,29 @@
     </style>
   </defs>
 
-  <rect width="1600" height="620" fill="#FFFFFF"/>
+  <rect width="1600" height="720" fill="#FFFFFF"/>
 
-  <!-- TOP: small meta eyebrow + rule -->
-  <text class="meta" x="80" y="62">NPM · DOWNLOADS · PORTFOLIO</text>
-  <line class="rule" x1="80" y1="92" x2="1520" y2="92"/>
+  <!-- TOP: eyebrow + rule -->
+  <text class="meta" x="80" y="64">NPM · DOWNLOADS · PORTFOLIO</text>
+  <line class="rule" x1="80" y1="94" x2="1520" y2="94"/>
 
-  <!-- CENTER wordmark -->
-  <text class="wordmark" x="72" y="320">pkgfolio</text>
+  <!-- WORDMARK: baseline at y=310, font-size 200px.
+       Times-fallback descenders reach ~ y=360. Reserving y=360–460 empty. -->
+  <text class="wordmark" x="72" y="310">pkgfolio</text>
 
-  <!-- Italic tagline with extra clearance so no descender crosses the rule -->
-  <text class="tag" x="76" y="420">A portfolio for your npm work.</text>
+  <!-- TAGLINE: baseline at y=490, 180px below wordmark baseline. Ample
+       clearance for Times descenders + x-height of 40px italic. -->
+  <text class="tag" x="76" y="490">A portfolio for your npm work.</text>
 
-  <!-- BOTTOM rule sits well below the tagline descender area -->
-  <line class="rule" x1="80" y1="520" x2="1520" y2="520"/>
+  <!-- BOTTOM rule, far below tagline descenders -->
+  <line class="rule" x1="80" y1="608" x2="1520" y2="608"/>
 
   <!-- BOTTOM meta row -->
-  <text class="meta" x="80" y="565">ONE COMMAND</text>
-  <circle class="dot" cx="275" cy="559" r="2.5"/>
-  <text class="meta" x="295" y="565">ONE PAGE</text>
-  <circle class="dot" cx="428" cy="559" r="2.5"/>
-  <text class="meta" x="448" y="565">EVERY PACKAGE YOU MAINTAIN</text>
+  <text class="meta" x="80" y="660">ONE COMMAND</text>
+  <circle class="dot" cx="275" cy="654" r="2.5"/>
+  <text class="meta" x="295" y="660">ONE PAGE</text>
+  <circle class="dot" cx="428" cy="654" r="2.5"/>
+  <text class="meta" x="448" y="660">EVERY PACKAGE YOU MAINTAIN</text>
 
-  <text class="meta" x="1520" y="565" text-anchor="end">PKGFOLIO.VERCEL.APP</text>
+  <text class="meta" x="1520" y="660" text-anchor="end">PKGFOLIO.VERCEL.APP</text>
 </svg>
