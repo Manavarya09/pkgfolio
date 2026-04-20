@@ -1,5 +1,7 @@
-// Shared helpers for the SVG embed routes. Keep output minimal, monochrome,
-// and dependency-free so browsers / GitHub's image proxy render consistently.
+// Shared helpers for the SVG embed routes. Intentionally generates SVGs with
+// NO <style> block and NO @import: GitHub's Camo image proxy sanitises those
+// aggressively and was making cards render as a broken-image icon in
+// READMEs. Every style is inline.
 
 export function fmt(n: number) {
   return n.toLocaleString('en-US');
@@ -39,34 +41,25 @@ export function xmlEscape(s: string) {
     .replace(/'/g, '&apos;');
 }
 
-// CSS block shared by every card. Embeds @import so the SVG looks right when
-// hosted at pkgfolio.vercel.app — on GitHub READMEs the cards fall back to
-// Times New Roman / ui-monospace, which the spacing is designed around.
-export const CARD_STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=JetBrains+Mono:wght@400;500&display=swap');
-  .big { font-family: 'Fraunces','Times New Roman',serif; font-weight: 300; letter-spacing: -0.03em; fill: #0A0908; }
-  .label { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-weight: 500; letter-spacing: 0.14em; fill: #7a7872; }
-  .val { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-weight: 500; fill: #0A0908; }
-  .sub { font-family: 'Fraunces','Times New Roman',serif; font-style: italic; font-weight: 300; fill: #3b3a36; }
-  .rule { stroke: #d9d5c9; stroke-width: 1; }
-  .spark { stroke: #0A0908; stroke-width: 1.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  .mark { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 10px; letter-spacing: 0.16em; fill: #7a7872; }
-`;
+// Reusable inline style strings. Times and ui-monospace are universally
+// available, so these render identically on github.com, VS Code markdown
+// preview, and any browser.
+export const S = {
+  serif: "font-family:'Times New Roman',Georgia,serif",
+  mono:  "font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace",
+};
 
-// Cache header that tells GitHub's Camo image proxy and browsers to hold
-// the SVG for a reasonable time but stay fresh within the hour.
 export const CACHE_HEADERS = {
   'content-type': 'image/svg+xml; charset=utf-8',
   'cache-control': 'public, max-age=1800, s-maxage=1800, stale-while-revalidate=3600',
 };
 
-export function errorSvg(message: string, width = 540, height = 160) {
+export function errorSvg(message: string, width = 560, height = 160) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
-  <style>${CARD_STYLE}</style>
   <rect width="${width}" height="${height}" fill="#FFFFFF" stroke="#d9d5c9"/>
-  <text class="label" x="24" y="40" style="font-size:11px">PKGFOLIO · ERROR</text>
-  <text class="big" x="24" y="92" style="font-size:28px">${xmlEscape(message)}</text>
-  <text class="mark" x="${width - 24}" y="${height - 20}" text-anchor="end">PKGFOLIO.VERCEL.APP</text>
+  <text x="24" y="40" style="${S.mono};font-size:11px;font-weight:600;letter-spacing:0.14em;fill:#7a7872">PKGFOLIO · ERROR</text>
+  <text x="24" y="92" style="${S.serif};font-size:28px;font-weight:400;letter-spacing:-0.02em;fill:#0A0908">${xmlEscape(message)}</text>
+  <text x="${width - 24}" y="${height - 20}" text-anchor="end" style="${S.mono};font-size:10px;letter-spacing:0.16em;fill:#7a7872">PKGFOLIO.VERCEL.APP</text>
 </svg>`;
   return new Response(svg, { headers: { ...CACHE_HEADERS, 'cache-control': 'no-store' } });
 }
