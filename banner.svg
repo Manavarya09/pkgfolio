@@ -1,36 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 500" width="1600" height="500" role="img" aria-label="pkgfolio — your npm package portfolio">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 620" width="1600" height="620" role="img" aria-label="pkgfolio — a portfolio for your npm work">
   <defs>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&amp;family=JetBrains+Mono:wght@400&amp;display=swap');
-      .wordmark { font-family: 'Fraunces', 'Times New Roman', serif; font-weight: 300; font-size: 240px; letter-spacing: -0.04em; fill: #0A0908; }
-      .tag { font-family: 'Fraunces', serif; font-weight: 300; font-style: italic; font-size: 42px; fill: #3b3a36; letter-spacing: -0.01em; }
-      .meta { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 20px; fill: #7a7872; letter-spacing: 0.14em; text-transform: uppercase; }
+      @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&amp;family=JetBrains+Mono:wght@400&amp;display=swap');
+      .wordmark { font-family: 'Fraunces', 'Times New Roman', serif; font-weight: 300; font-size: 220px; letter-spacing: -0.04em; fill: #0A0908; }
+      .tag { font-family: 'Fraunces', 'Times New Roman', serif; font-weight: 300; font-style: italic; font-size: 40px; fill: #3b3a36; letter-spacing: -0.005em; }
+      .meta { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 19px; fill: #7a7872; letter-spacing: 0.16em; }
       .rule { stroke: #d9d5c9; stroke-width: 1.5; }
       .dot { fill: #0A0908; }
     </style>
   </defs>
 
-  <!-- paper background -->
-  <rect width="1600" height="500" fill="#FFFFFF"/>
+  <rect width="1600" height="620" fill="#FFFFFF"/>
 
-  <!-- top meta line -->
-  <text class="meta" x="72" y="60">npm · downloads · portfolio</text>
-  <line class="rule" x1="72" y1="92" x2="1528" y2="92"/>
+  <!-- TOP: small meta eyebrow + rule -->
+  <text class="meta" x="80" y="62">NPM · DOWNLOADS · PORTFOLIO</text>
+  <line class="rule" x1="80" y1="92" x2="1520" y2="92"/>
 
-  <!-- wordmark -->
-  <text class="wordmark" x="64" y="310">pkgfolio</text>
+  <!-- CENTER wordmark -->
+  <text class="wordmark" x="72" y="320">pkgfolio</text>
 
-  <!-- italic tagline directly under -->
-  <text class="tag" x="68" y="370">A portfolio for your npm work.</text>
+  <!-- Italic tagline with extra clearance so no descender crosses the rule -->
+  <text class="tag" x="76" y="420">A portfolio for your npm work.</text>
 
-  <!-- bottom rule + meta -->
-  <line class="rule" x1="72" y1="430" x2="1528" y2="430"/>
-  <text class="meta" x="72" y="462">one command</text>
-  <circle class="dot" cx="265" cy="457" r="3"/>
-  <text class="meta" x="285" y="462">one page</text>
-  <circle class="dot" cx="430" cy="457" r="3"/>
-  <text class="meta" x="450" y="462">every package you maintain</text>
+  <!-- BOTTOM rule sits well below the tagline descender area -->
+  <line class="rule" x1="80" y1="520" x2="1520" y2="520"/>
 
-  <!-- right-side version tag -->
-  <text class="meta" x="1528" y="462" text-anchor="end">pkgfolio.vercel.app</text>
+  <!-- BOTTOM meta row -->
+  <text class="meta" x="80" y="565">ONE COMMAND</text>
+  <circle class="dot" cx="275" cy="559" r="2.5"/>
+  <text class="meta" x="295" y="565">ONE PAGE</text>
+  <circle class="dot" cx="428" cy="559" r="2.5"/>
+  <text class="meta" x="448" y="565">EVERY PACKAGE YOU MAINTAIN</text>
+
+  <text class="meta" x="1520" y="565" text-anchor="end">PKGFOLIO.VERCEL.APP</text>
 </svg>
