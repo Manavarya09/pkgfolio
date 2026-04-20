@@ -2,7 +2,9 @@ import { NextRequest } from 'next/server';
 import { CACHE_HEADERS, S, errorSvg, fmt, sparkPath, xmlEscape } from '@/lib/embed';
 import { fetchPortfolio, parseRange } from '@/lib/npm';
 
-export const revalidate = 1800;
+// 5-minute revalidate — aligned with the Cache-Control headers so the badge
+// refreshes on GitHub READMEs via Camo on the same cadence as shields.io.
+export const revalidate = 300;
 
 export async function GET(req: NextRequest, { params }: { params: { username: string } }) {
   const username = decodeURIComponent(params.username || '');

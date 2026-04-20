@@ -1,7 +1,9 @@
 import { NextRequest } from 'next/server';
 import { CACHE_HEADERS, S, errorSvg, fmt, sparkPath, xmlEscape } from '@/lib/embed';
 
-export const revalidate = 1800; // 30 minutes
+// 5 minutes — matches shields.io. Camo refreshes GitHub README badges around
+// this cadence, so stats stay as close to real-time as the proxy allows.
+export const revalidate = 300;
 
 const POINT_URL = 'https://api.npmjs.org/downloads/point';
 const RANGE_URL = 'https://api.npmjs.org/downloads/range';

@@ -49,9 +49,15 @@ export const S = {
   mono:  "font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace",
 };
 
+// Cache policy tuned for "live" README badges:
+//   - max-age=300 (5 min) matches shields.io so GitHub's Camo image proxy
+//     treats us like a normal live badge and refetches on roughly that cadence.
+//   - s-maxage=300 applies to Vercel's own CDN.
+//   - stale-while-revalidate=600 lets Camo serve the prior render while the
+//     next one is warming up — the badge never shows as broken during a re-pull.
 export const CACHE_HEADERS = {
   'content-type': 'image/svg+xml; charset=utf-8',
-  'cache-control': 'public, max-age=1800, s-maxage=1800, stale-while-revalidate=3600',
+  'cache-control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=600',
 };
 
 export function errorSvg(message: string, width = 560, height = 160) {
