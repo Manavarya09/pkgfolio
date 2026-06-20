@@ -143,7 +143,8 @@ export function parseRange(raw?: string): DateRange {
   const daysAgo = (n: number) => new Date(today.getTime() - n * 86400000).toISOString().slice(0, 10);
 
   if (raw && /^\d{4}-\d{2}-\d{2}:\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    const [s, e] = raw.split(':');
+    let [s, e] = raw.split(':');
+    if (s > e) [s, e] = [e, s];
     return { key: 'custom', start: s, end: e, label: `${s} → ${e}` };
   }
 
